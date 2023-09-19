@@ -1,20 +1,21 @@
-use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
-use std::fs;
+use actix_files::NamedFile;
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, Result};
+use std::path::PathBuf;
 
 #[derive(serde::Serialize, serde::Deserialize, Debug)]
 struct Info {
-    name: String,
+    todo: String,
 }
 
 #[get("/")]
-async fn hello() -> impl Responder {
-    let contents = fs::read_to_string("./public/index.html").unwrap();
-    HttpResponse::Ok().body(contents)
+async fn hello() -> Result<NamedFile> {
+    let path: PathBuf = "./public/index.html".parse().unwrap();
+    Ok(NamedFile::open(path)?)
 }
 
 #[post("/echo")]
 async fn echo(req_body: web::Json<Info>) -> impl Responder {
-    let response = format!("<h1>Hello, my name is {}</h1>", req_body.name);
+    let response = format!("<h1>{}</h1>", req_body.todo);
     HttpResponse::Ok().body(response)
 }
 
